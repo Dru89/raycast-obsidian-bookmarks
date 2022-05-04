@@ -50,7 +50,7 @@ export default async function saveToObsidian(link: LinkFormState["values"]): Pro
     title: ${JSON.stringify(link.title)}
     tags: ${JSON.stringify(tags)}
     added: ${formatDate(now)}
-    read: no
+    read: false
     ---
 
     # [${link.title.replace(/\[\]/g, "")}](${link.url})
@@ -59,16 +59,14 @@ export default async function saveToObsidian(link: LinkFormState["values"]): Pro
   `;
 
   const fileSlug = `${formatDate(now)}-${slugify(link.title)}`.slice(0, 150);
-  const fileName = `${fileSlug}.md`;
+  const baseName = `${fileSlug}.md`;
 
-  const fullPath = await getFileName(fileName);
-  addToLocalStorageFiles([
-    {
-      ...frontMatter(template),
-      fullPath,
-      fileName,
-    },
+  const fullPath = await getFileName(baseName);
+  const fileName = path.basename(fullPath);
+  await Promise.allSettled([
+    fs.writeFile(fullPath, template, { encoding: "utf-8" }),
+    addToLocalStorageTags(tags),
+    addToLocalStorageFiles([{ ...frontMatter(template), fullPath, fileName }]),
   ]);
-  await Promise.all([fs.writeFile(fullPath, template, { encoding: "utf-8" }), addToLocalStorageTags(tags)]);
   return path.basename(fullPath);
 }

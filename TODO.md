@@ -1,0 +1,3 @@
+- [ ] Get some screenshots
+- [ ] Update CHANGELOG.md and README.md
+- [ ] Follow along with: https://developers.raycast.com/basics/prepare-an-extension-for-store
