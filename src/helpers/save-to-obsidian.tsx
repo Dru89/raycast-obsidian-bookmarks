@@ -8,14 +8,7 @@ import { LinkFormState } from "../hooks/use-link-form";
 import { Preferences } from "../types";
 import slugify from "./slugify";
 import { addToLocalStorageTags } from "./localstorage-tags";
-
-function formatDate(date: Date): string {
-  const year = String(date.getFullYear()).padStart(4, "0");
-  const month = String(date.getMonth()).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
+import formatDate from "./format-date";
 
 async function exists(filename: string): Promise<boolean> {
   try {
@@ -43,7 +36,6 @@ export default async function saveToObsidian(link: LinkFormState["values"]): Pro
   const now = new Date();
   const tags = link.tags.map((t) => slugify(t));
 
-  // TODO: Maybe use something like Handlebars and allow for custom templates.
   const template = dedent`
     ---
     url: ${JSON.stringify(link.url)}
@@ -58,7 +50,6 @@ export default async function saveToObsidian(link: LinkFormState["values"]): Pro
     ${link.description}
   `;
 
-  // TODO: If we allow for custom templates, we should allow for custom filenames, too.
   const fileSlug = `${formatDate(now)}-${slugify(link.title)}`.slice(0, 150);
   const filename = `${fileSlug}.md`;
 

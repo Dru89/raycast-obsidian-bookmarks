@@ -1,4 +1,4 @@
-import { ActionPanel, Action, showHUD, popToRoot, showToast, Toast, FileIcon } from "@raycast/api";
+import { Action, ActionPanel, FileIcon, Icon, popToRoot, showHUD } from "@raycast/api";
 import openObsidianFile from "../helpers/open-obsidian-file";
 import { File } from "../types";
 
@@ -18,8 +18,6 @@ export default function FileItemActionPanel({
     <ActionPanel title="Bookmark">
       <Action.OpenInBrowser url={file.attributes.url} />
       <Action
-        // TODO: Get Obsidian file icon
-        // icon={{fileIcon: "/Applications/Obsidian.app"}}
         title="Open in Obsidian"
         icon={obsidianFileIcon}
         onAction={async () => {
@@ -29,15 +27,16 @@ export default function FileItemActionPanel({
         }}
       />
       <Action
-        // TODO: find a good icon for this
+        icon={Icon.TextDocument}
         title={showDetail ? "Hide Details" : "Show Details"}
         onAction={() => onShowDetailChange(!showDetail)}
       />
       <ActionPanel.Section>
+        {/*
         <Action
-          // TODO: Icon
           // TODO: implement this method.
           title="Mark as Read"
+          icon={Icon.Checkmark}
           onAction={async () => {
             const toast = await showToast({
               style: Toast.Style.Failure,
@@ -48,6 +47,7 @@ export default function FileItemActionPanel({
             setTimeout(() => toast.hide(), 2000);
           }}
         />
+        */}
         <Action.Trash title="Delete Bookmark" paths={file.fullPath} />
       </ActionPanel.Section>
     </ActionPanel>

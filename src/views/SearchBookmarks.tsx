@@ -1,7 +1,12 @@
 import { FileIcon, getApplications, List } from "@raycast/api";
-import { useEffect, useMemo, useState } from "react";
+import Fuse from "fuse.js";
+import { useEffect, useMemo, useRef, useState } from "react";
+import formatDate from "../helpers/format-date";
 import useFiles from "../hooks/use-files";
+import { File } from "../types";
 import FileListItem from "./FileListItem";
+
+const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 export default function SearchBookmarks() {
   const { files, loading } = useFiles();
@@ -9,6 +14,7 @@ export default function SearchBookmarks() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [obsidianIcon, setObsidianIcon] = useState<FileIcon>();
+  const filesRef = useRef<Fuse.FuseResult<File>[]>([]);
 
   const tagsByPopularity = useMemo(() => {
     const allTags = files.flatMap((file) => file.attributes.tags);
@@ -23,6 +29,18 @@ export default function SearchBookmarks() {
     return Object.entries(ranked).sort((a, b) => b[1] - a[1]);
   }, [files]);
 
+  const fuse = useMemo(() => {
+    return new Fuse<File>(files, {
+      fieldNormWeight: 1,
+      keys: [
+        { name: "title", weight: 5 },
+        { name: "tags", weight: 2 },
+        { name: "body", weight: 2 },
+        { name: "url", weight: 1 },
+      ],
+    });
+  }, [files]);
+
   useEffect(() => {
     const fetch = async () => {
       const apps = await getApplications();
@@ -35,19 +53,49 @@ export default function SearchBookmarks() {
     fetch();
   }, []);
 
+  useEffect(() => {
+    const filtered = (input: Fuse.FuseResult<File>[]) => {
+      switch (filter) {
+        case "all": {
+          return input;
+        }
+        case "unread": {
+          return input.filter(({ item }) => !item.attributes.read);
+        }
+        case "read": {
+          return input.filter(({ item }) => item.attributes.read);
+        }
+        case "last1d": {
+          const date = new Date(Date.now() - ONE_DAY_IN_MS);
+          const formatted = formatDate(date);
+          return input.filter(({ item }) => item.attributes.added >= formatted);
+        }
+        case "last7d": {
+          const date = new Date(Date.now() - 7 * ONE_DAY_IN_MS);
+          const formatted = formatDate(date);
+          return input.filter(({ item }) => item.attributes.added >= formatted);
+        }
+        case "last30d": {
+          const date = new Date(Date.now() - 30 * ONE_DAY_IN_MS);
+          const formatted = formatDate(date);
+          return input.filter(({ item }) => item.attributes.added >= formatted);
+        }
+        default: {
+          if (!filter.startsWith("tag:")) {
+            throw new Error(`Unknown filter: ${filter}`);
+          }
+          const tag = filter.slice(4);
+          return input.filter(({ item }) => item.attributes.tags.includes(tag));
+        }
+      }
+    };
+
+    filesRef.current = filtered(fuse.search(search));
+  }, [search, filter, fuse]);
+
   return (
     <List
-      // TODO: Handle accessory filtering
-      // searchBarAccessory={}
-      // ---
-      // Should use:
-      // Unsectioned: All, Unread, Read
-      // Unnamed Section: Last 24 Hours, Last Week, Last Month
-      // Section("Tags"): Tags (sorted by frequency?)
-      // ---
-
-      // TODO: Handle filtering
-      // enableFiltering={false}
+      enableFiltering={false}
       searchBarAccessory={
         <List.Dropdown tooltip="Filter Bookmarks" value={filter} onChange={setFilter}>
           <List.Dropdown.Item title="All" value="all" />
@@ -74,7 +122,7 @@ export default function SearchBookmarks() {
       onSearchTextChange={(text) => setSearch(text)}
       throttle
     >
-      {files.map((file) => (
+      {filesRef.current.map(({ item: file }) => (
         <FileListItem
           file={file}
           loading={loading}

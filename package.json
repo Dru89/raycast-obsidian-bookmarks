@@ -28,6 +28,7 @@
   "dependencies": {
     "@raycast/api": "^1.33.2",
     "front-matter": "^4.0.2",
+    "fuse.js": "^6.6.0",
     "run-applescript": "^6.0.0",
     "run-jxa": "^3.0.0",
     "slugify": "^1.6.5",
