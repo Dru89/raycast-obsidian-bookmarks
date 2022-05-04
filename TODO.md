@@ -1,3 +1,13 @@
 - [ ] Get some screenshots
 - [ ] Update CHANGELOG.md and README.md
+- [ ] Additional actions
+  - should use keyboard shortcuts (similar ones to https://github.com/raycast/extensions/tree/main/extensions/obsidian?)
+  - Ideas:
+    - copy URL to clipboard
+    - copy Markdown URL to clipboard
+    - copy Obsidian URI to clipboard
+    - copy Markdown Obsidian URI to clipboard
+- [ ] create an icon
+  - https://github.com/raycast/extensions/tree/main/extensions/obsidian + a bookmark symbol?
+- [ ]
 - [ ] Follow along with: https://developers.raycast.com/basics/prepare-an-extension-for-store
