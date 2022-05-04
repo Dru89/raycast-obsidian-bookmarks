@@ -35,7 +35,7 @@ export interface FrontMatter {
   url: string;
   title: string;
   tags: string[];
-  added: string;
+  added: Date;
   read: boolean;
 }
 

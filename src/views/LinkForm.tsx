@@ -33,38 +33,38 @@ export default function LinkForm() {
     }
   }, [linkLoading]);
 
+  const handleSubmit = async (openObsidian: boolean) => {
+    const toastPromise = showToast({
+      style: Toast.Style.Animated,
+      title: "Saving Bookmark",
+    });
+    const savePromise = saveToObsidian(values);
+    const [toast, saved] = await Promise.allSettled([toastPromise, savePromise]);
+    if (toast.status === "rejected") {
+      throw new Error("Unexpected: Toast failed to display.");
+    }
+
+    if (saved.status === "rejected") {
+      toast.value.style = Toast.Style.Failure;
+      toast.value.message = String(saved.reason);
+    } else {
+      toast.value.hide();
+      if (openObsidian) {
+        openObsidianFile(saved.value);
+      }
+      await showHUD("Bookmark saved");
+      popToRoot();
+    }
+  };
+
   return (
     <Form
       navigationTitle="Save Bookmark"
       isLoading={tagsLoading || linkLoading}
       actions={
         <ActionPanel>
-          <Action.SubmitForm
-            title="Save Bookmark"
-            onSubmit={async () => {
-              const toastPromise = showToast({
-                style: Toast.Style.Animated,
-                title: "Saving Bookmark",
-              });
-              const savePromise = saveToObsidian(values);
-              const [toast, saved] = await Promise.allSettled([toastPromise, savePromise]);
-              if (toast.status === "rejected") {
-                throw new Error("Unexpected: Toast failed to display.");
-              }
-
-              if (saved.status === "rejected") {
-                toast.value.style = Toast.Style.Failure;
-                console.log(saved.reason);
-                toast.value.message = String(saved.reason);
-              } else {
-                toast.value.hide();
-                console.log("Opening file", saved.value);
-                openObsidianFile(saved.value);
-                await showHUD("Bookmark saved");
-                popToRoot();
-              }
-            }}
-          />
+          <Action title="Save Bookmark" onAction={() => handleSubmit(false)} />
+          <Action title="Save & Open Obsidian" onAction={() => handleSubmit(true)} />
         </ActionPanel>
       }
     >

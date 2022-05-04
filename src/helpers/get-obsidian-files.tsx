@@ -26,5 +26,6 @@ export default async function getObsidianFiles(): Promise<Array<File>> {
   const results = await Promise.allSettled(promises);
   const fileResults = await results.filter(isFulfilledPromise).map((result) => result.value);
   await replaceLocalStorageFiles(fileResults);
+
   return fileResults;
 }

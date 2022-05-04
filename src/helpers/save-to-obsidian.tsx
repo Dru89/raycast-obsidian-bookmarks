@@ -1,14 +1,21 @@
+import { getPreferenceValues } from "@raycast/api";
+import frontMatter from "front-matter";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-
-import { getPreferenceValues } from "@raycast/api";
 import dedent from "ts-dedent";
-
 import { LinkFormState } from "../hooks/use-link-form";
 import { Preferences } from "../types";
-import slugify from "./slugify";
+import { addToLocalStorageFiles } from "./localstorage-files";
 import { addToLocalStorageTags } from "./localstorage-tags";
-import formatDate from "./format-date";
+import slugify from "./slugify";
+
+function formatDate(date: Date): string {
+  const year = String(date.getFullYear()).padStart(4, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
 
 async function exists(filename: string): Promise<boolean> {
   try {
@@ -34,6 +41,7 @@ async function getFileName(filename: string): Promise<string> {
 
 export default async function saveToObsidian(link: LinkFormState["values"]): Promise<string> {
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const tags = link.tags.map((t) => slugify(t));
 
   const template = dedent`
@@ -51,9 +59,16 @@ export default async function saveToObsidian(link: LinkFormState["values"]): Pro
   `;
 
   const fileSlug = `${formatDate(now)}-${slugify(link.title)}`.slice(0, 150);
-  const filename = `${fileSlug}.md`;
+  const fileName = `${fileSlug}.md`;
 
-  const file = await getFileName(filename);
-  await Promise.all([fs.writeFile(file, template, { encoding: "utf-8" }), addToLocalStorageTags(tags)]);
-  return path.basename(file);
+  const fullPath = await getFileName(fileName);
+  addToLocalStorageFiles([
+    {
+      ...frontMatter(template),
+      fullPath,
+      fileName,
+    },
+  ]);
+  await Promise.all([fs.writeFile(fullPath, template, { encoding: "utf-8" }), addToLocalStorageTags(tags)]);
+  return path.basename(fullPath);
 }

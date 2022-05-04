@@ -1,12 +1,17 @@
 import { FileIcon, getApplications, List } from "@raycast/api";
 import Fuse from "fuse.js";
-import { useEffect, useMemo, useRef, useState } from "react";
-import formatDate from "../helpers/format-date";
+import { useEffect, useMemo, useState } from "react";
 import useFiles from "../hooks/use-files";
 import { File } from "../types";
 import FileListItem from "./FileListItem";
 
 const ONE_DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+function midnight(daysAgo: number): Date {
+  const date = new Date(Date.now() - daysAgo * ONE_DAY_IN_MS);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
 
 export default function SearchBookmarks() {
   const { files, loading } = useFiles();
@@ -14,7 +19,7 @@ export default function SearchBookmarks() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [obsidianIcon, setObsidianIcon] = useState<FileIcon>();
-  const filesRef = useRef<Fuse.FuseResult<File>[]>([]);
+  const [fileResult, setFileResult] = useState<File[]>(files);
 
   const tagsByPopularity = useMemo(() => {
     const allTags = files.flatMap((file) => file.attributes.tags);
@@ -54,43 +59,42 @@ export default function SearchBookmarks() {
   }, []);
 
   useEffect(() => {
-    const filtered = (input: Fuse.FuseResult<File>[]) => {
+    const filtered = (input: File[]) => {
       switch (filter) {
         case "all": {
           return input;
         }
         case "unread": {
-          return input.filter(({ item }) => !item.attributes.read);
+          return input.filter((item) => !item.attributes.read);
         }
         case "read": {
-          return input.filter(({ item }) => item.attributes.read);
+          return input.filter((item) => item.attributes.read);
         }
         case "last1d": {
-          const date = new Date(Date.now() - ONE_DAY_IN_MS);
-          const formatted = formatDate(date);
-          return input.filter(({ item }) => item.attributes.added >= formatted);
+          const date = midnight(1);
+          return input.filter((item) => item.attributes.added >= date);
         }
         case "last7d": {
-          const date = new Date(Date.now() - 7 * ONE_DAY_IN_MS);
-          const formatted = formatDate(date);
-          return input.filter(({ item }) => item.attributes.added >= formatted);
+          const date = midnight(7);
+          return input.filter((item) => item.attributes.added >= date);
         }
         case "last30d": {
-          const date = new Date(Date.now() - 30 * ONE_DAY_IN_MS);
-          const formatted = formatDate(date);
-          return input.filter(({ item }) => item.attributes.added >= formatted);
+          const date = midnight(30);
+          return input.filter((item) => item.attributes.added >= date);
         }
         default: {
           if (!filter.startsWith("tag:")) {
             throw new Error(`Unknown filter: ${filter}`);
           }
           const tag = filter.slice(4);
-          return input.filter(({ item }) => item.attributes.tags.includes(tag));
+          return input.filter((item) => item.attributes.tags.includes(tag));
         }
       }
     };
 
-    filesRef.current = filtered(fuse.search(search));
+    const items = search.trim() ? fuse.search(search).map(({ item }) => item) : files;
+    const filteredItems = filtered(items);
+    setFileResult(filteredItems);
   }, [search, filter, fuse]);
 
   return (
@@ -122,7 +126,7 @@ export default function SearchBookmarks() {
       onSearchTextChange={(text) => setSearch(text)}
       throttle
     >
-      {filesRef.current.map(({ item: file }) => (
+      {fileResult.map((file) => (
         <FileListItem
           file={file}
           loading={loading}
