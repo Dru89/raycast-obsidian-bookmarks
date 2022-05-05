@@ -1,13 +1,15 @@
-- [ ] Get some screenshots
-- [ ] Update CHANGELOG.md and README.md
-- [ ] Additional actions
-  - should use keyboard shortcuts (similar ones to https://github.com/raycast/extensions/tree/main/extensions/obsidian?)
-  - Ideas:
-    - copy URL to clipboard
-    - copy Markdown URL to clipboard
-    - copy Obsidian URI to clipboard
-    - copy Markdown Obsidian URI to clipboard
-    - mark as read/unread
+- [ ] Add better "setup/shutdown" to actions.
+- [ ] Add keyboard shortcuts to actions.
+  - (similar ones to https://github.com/raycast/extensions/tree/main/extensions/obsidian?)
+- [ ] Re-write a few things to use React Context
+  - Applications: `useApplications`, `useApplication`
+  - Preferences: `usePreferences`, `usePreference`
+  - Files: `useFiles`, `useFile`, `useLazyFile`. (Should offer easier ICRUD; lazy will wait to read from disk if it can.)
+- [ ] Re-write local storage cache fetch
+  - Add an `mtime` to the cache. Can use this to compare to see if we need a read.
+  - Use streamed updates instead of a promise with RxJS.
 - [ ] create an icon
   - https://github.com/raycast/extensions/tree/main/extensions/obsidian + a bookmark symbol?
+- [ ] Get some screenshots
+- [ ] Update CHANGELOG.md and README.md
 - [ ] Follow along with: https://developers.raycast.com/basics/prepare-an-extension-for-store

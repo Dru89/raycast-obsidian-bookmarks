@@ -1,6 +1,7 @@
-import { List, Icon, FileIcon } from "@raycast/api";
+import { FileIcon, Icon, List } from "@raycast/api";
+import { Dispatch, SetStateAction } from "react";
+import DetailsActions from "../actions/DetailsActions";
 import { File } from "../types";
-import FileItemActionPanel from "./FileItemActionPanel";
 import FileItemDetail from "./FileItemDetail";
 
 type Props = {
@@ -8,14 +9,14 @@ type Props = {
   loading: boolean;
   obsidianFileIcon?: FileIcon;
   showDetail: boolean;
-  onShowDetailChange: (newShowDetail: boolean) => void;
+  setShowDetail: Dispatch<SetStateAction<boolean>>;
 };
 export default function FileListItem({
   file,
   loading,
   obsidianFileIcon,
   showDetail,
-  onShowDetailChange,
+  setShowDetail,
 }: Props): JSX.Element {
   return (
     <List.Item
@@ -25,11 +26,11 @@ export default function FileListItem({
       accessories={file.attributes.tags.map((tag) => ({ text: tag }))}
       icon={Icon.Link}
       actions={
-        <FileItemActionPanel
+        <DetailsActions
           file={file}
-          obsidianFileIcon={obsidianFileIcon}
           showDetail={showDetail}
-          onShowDetailChange={onShowDetailChange}
+          setShowDetail={setShowDetail}
+          obsidianFileIcon={obsidianFileIcon}
         />
       }
       detail={<FileItemDetail file={file} loading={loading} />}

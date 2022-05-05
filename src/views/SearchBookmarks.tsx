@@ -131,7 +131,7 @@ export default function SearchBookmarks() {
           file={file}
           loading={loading}
           showDetail={showDetail}
-          onShowDetailChange={setShowDetail}
+          setShowDetail={setShowDetail}
           key={file.fullPath}
           obsidianFileIcon={obsidianIcon}
         />

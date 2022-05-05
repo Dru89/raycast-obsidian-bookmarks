@@ -4,7 +4,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import dedent from "ts-dedent";
 import { LinkFormState } from "../hooks/use-link-form";
-import { Preferences } from "../types";
+import { File, FrontMatter, Preferences } from "../types";
 import { addToLocalStorageFiles } from "./localstorage-files";
 import { addToLocalStorageTags } from "./localstorage-tags";
 import slugify from "./slugify";
@@ -39,34 +39,65 @@ async function getFileName(filename: string): Promise<string> {
   return file;
 }
 
-export default async function saveToObsidian(link: LinkFormState["values"]): Promise<string> {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const tags = link.tags.map((t) => slugify(t));
+// TODO: helper method for creating File from LinkFormState["values"];
+export async function asFile(values: LinkFormState["values"]): Promise<File> {
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
 
-  const template = dedent`
-    ---
-    url: ${JSON.stringify(link.url)}
-    title: ${JSON.stringify(link.title)}
-    tags: ${JSON.stringify(tags)}
-    added: ${formatDate(now)}
-    read: false
-    ---
+  const attributes: FrontMatter = {
+    url: values.url,
+    title: values.title,
+    tags: values.tags.map((t) => slugify(t)),
+    added: midnight,
+    read: false,
+  };
 
-    # [${link.title.replace(/\[\]/g, "")}](${link.url})
-
-    ${link.description}
+  const body = dedent`
+  # [${values.title.replace(/[[\]]/g, "")}](${values.url})
+  
+  ${values.description}
   `;
 
-  const fileSlug = `${formatDate(now)}-${slugify(link.title)}`.slice(0, 150);
-  const baseName = `${fileSlug}.md`;
+  const frontmatter = dedent`
+  url: ${JSON.stringify(attributes.url)}
+  title: ${JSON.stringify(attributes.title)}
+  tags: ${JSON.stringify(attributes.tags)}
+  added: ${formatDate(midnight)}
+  read: ${JSON.stringify(attributes.read)}
+  `;
 
+  const fileSlug = `${formatDate(midnight)}-${slugify(attributes.title)}`.slice(0, 150);
+  const baseName = `${fileSlug}.md`;
   const fullPath = await getFileName(baseName);
   const fileName = path.basename(fullPath);
+
+  return {
+    attributes,
+    frontmatter,
+    body,
+    fileName,
+    fullPath,
+    bodyBegin: 4 + frontmatter.length,
+  };
+}
+
+export default async function saveToObsidian(file: File): Promise<string> {
+  const template = dedent`
+    ---
+    url: ${JSON.stringify(file.attributes.url)}
+    title: ${JSON.stringify(file.attributes.title)}
+    tags: ${JSON.stringify(file.attributes.tags)}
+    added: ${formatDate(file.attributes.added)}
+    read: ${JSON.stringify(file.attributes.read)}
+    ---
+
+    ${file.body}
+  `;
+
   await Promise.allSettled([
-    fs.writeFile(fullPath, template, { encoding: "utf-8" }),
-    addToLocalStorageTags(tags),
-    addToLocalStorageFiles([{ ...frontMatter(template), fullPath, fileName }]),
+    fs.writeFile(file.fullPath, template, { encoding: "utf-8" }),
+    addToLocalStorageTags(file.attributes.tags),
+    addToLocalStorageFiles([file]),
   ]);
-  return path.basename(fullPath);
+  return file.fileName;
 }
