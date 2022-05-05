@@ -1,7 +1,7 @@
 import { List } from "@raycast/api";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
-import useFiles from "../hooks/use-files";
+import useFiles from "../hooks/use-files-old";
 import { File } from "../types";
 import FileListItem from "./FileListItem";
 
