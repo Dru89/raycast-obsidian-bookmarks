@@ -1,4 +1,4 @@
-import { Action, Color, FileIcon, getPreferenceValues, Icon } from "@raycast/api";
+import { Action, Alert, Color, confirmAlert, FileIcon, getPreferenceValues, Icon, showHUD } from "@raycast/api";
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
 import { DetailActionPreference, File, Preferences } from "../types";
 import * as methods from "./methods";
@@ -17,6 +17,7 @@ const createDetailsActions = (
       {
         title: showDetail ? "Hide Details" : "Show Details",
         icon: showDetail ? Icon.EyeSlash : Icon.Eye,
+        shortcut: { modifiers: ["cmd", "shift"], key: "p" },
         onAction: () => setShowDetail((detail) => !detail),
       },
     ],
@@ -25,6 +26,7 @@ const createDetailsActions = (
       {
         title: file.attributes.read ? "Mark as Unread" : "Mark as Read",
         icon: file.attributes.read ? Icon.Circle : Icon.Checkmark,
+        shortcut: { modifiers: ["cmd", "shift"], key: "x" },
         onAction: () => (file.attributes.read ? methods.markAsUnread(file) : methods.markAsRead(file)),
       },
     ],
@@ -41,21 +43,30 @@ const createObsidianActions = (file: File, icon?: FileIcon): ActionGroup<DetailA
       "openObsidian",
       {
         title: "Open Obsidian",
-        onAction: () => methods.openObsidianFile(file),
+        shortcut: { modifiers: ["cmd"], key: "o" },
+        onAction: () => Promise.allSettled([methods.openObsidianFile(file), showHUD("Opening Obsidian…")]),
       },
     ],
     [
       "copyObsidianUrl",
       {
         title: "Copy Obsidian Link",
-        onAction: () => methods.copyObsidianUri(file),
+        shortcut: { modifiers: ["cmd"], key: "c" },
+        onAction: async () => {
+          await methods.copyObsidianUri(file);
+          showHUD("Link copied");
+        },
       },
     ],
     [
       "copyObsidianUrlAsMarkdown",
       {
         title: "Copy Obsidian Link as Markdown",
-        onAction: () => methods.copyObsidianUriAsMarkdown(file),
+        shortcut: { modifiers: ["cmd"], key: "l" },
+        onAction: async () => {
+          await methods.copyObsidianUriAsMarkdown(file);
+          showHUD("Link copied");
+        },
       },
     ],
   ]),
@@ -69,25 +80,34 @@ const createBrowserActions = (file: File): ActionGroup<DetailActionPreference> =
     [
       "openUrl",
       {
-        icon: Icon.Globe,
         title: "Open Link",
-        onAction: () => methods.openUrl(file),
+        icon: Icon.Globe,
+        shortcut: { modifiers: ["cmd", "shift"], key: "o" },
+        onAction: () => Promise.allSettled([methods.openUrl(file), showHUD("Opening link…")]),
       },
     ],
     [
       "copyUrl",
       {
-        icon: Icon.Link,
         title: "Copy Link",
-        onAction: () => methods.copyUrl(file),
+        icon: Icon.Link,
+        shortcut: { modifiers: ["cmd", "shift"], key: "c" },
+        onAction: async () => {
+          await methods.copyUrl(file);
+          showHUD("Link copied");
+        },
       },
     ],
     [
       "copyUrlAsMarkdown",
       {
-        icon: Icon.Link,
         title: "Copy Link as Markdown",
-        onAction: () => methods.copyUrlAsMarkdown(file),
+        icon: Icon.Link,
+        shortcut: { modifiers: ["cmd", "shift"], key: "l" },
+        onAction: async () => {
+          await methods.copyUrlAsMarkdown(file);
+          showHUD("Link copied");
+        },
       },
     ],
   ]),
@@ -102,7 +122,24 @@ const createDestructiveActions = (file: File): ActionGroup<DetailActionPreferenc
       {
         title: "Delete Bookmark",
         icon: { source: Icon.Trash, tintColor: Color.Red },
-        onAction: () => methods.deleteFile(file),
+        shortcut: { modifiers: ["cmd"], key: "delete" },
+        onAction: async () => {
+          const confirm = await confirmAlert({
+            icon: { source: Icon.Trash, tintColor: Color.Red },
+            title: "Are you sure?",
+            message: `Really delete ${file.attributes.title}?\nThis action cannot be undone.`,
+            dismissAction: {
+              title: "Nevermind",
+            },
+            primaryAction: {
+              title: "Delete",
+              style: Alert.ActionStyle.Destructive,
+            },
+          });
+          if (confirm) {
+            methods.deleteFile(file);
+          }
+        },
       },
     ],
   ]),

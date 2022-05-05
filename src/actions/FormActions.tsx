@@ -1,4 +1,4 @@
-import { Action, FileIcon, getApplications, getPreferenceValues, Icon } from "@raycast/api";
+import { Action, FileIcon, getApplications, getPreferenceValues, Icon, showHUD } from "@raycast/api";
 import { useEffect, useMemo, useState } from "react";
 import { asFile } from "../helpers/save-to-obsidian";
 import { LinkFormState } from "../hooks/use-link-form";
@@ -21,21 +21,33 @@ const createObsidianActions = (
       "openObsidian",
       {
         title: "Open Obsidian",
-        onAction: () => saveFile(values).then((file) => methods.openObsidianFile(file)),
+        shortcut: { modifiers: ["cmd", "shift"], key: "o" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.openObsidianFile(file), showHUD("Opening Obsidian…")]);
+        },
       },
     ],
     [
       "copyObsidianUrl",
       {
         title: "Copy Obsidian Link",
-        onAction: () => saveFile(values).then((file) => methods.copyObsidianUri(file)),
+        shortcut: { modifiers: ["cmd", "shift"], key: "c" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.copyObsidianUri(file), showHUD("Link copied")]);
+        },
       },
     ],
     [
       "copyObsidianUrlAsMarkdown",
       {
         title: "Copy Obsidian Link as Markdown",
-        onAction: () => saveFile(values).then((file) => methods.copyObsidianUriAsMarkdown(file)),
+        shortcut: { modifiers: ["cmd", "shift"], key: "l" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.copyObsidianUriAsMarkdown(file), showHUD("Link copied")]);
+        },
       },
     ],
   ]),
@@ -49,9 +61,13 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
     [
       "openUrl",
       {
-        icon: Icon.Globe,
         title: "Open Link",
-        onAction: () => saveFile(values).then((file) => methods.openUrl(file)),
+        icon: Icon.Globe,
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "o" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.openUrl(file), showHUD("Opening link…")]);
+        },
       },
     ],
     [
@@ -59,7 +75,11 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
       {
         icon: Icon.Link,
         title: "Copy Link",
-        onAction: () => saveFile(values).then((file) => methods.copyUrl(file)),
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "c" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.copyUrl(file), showHUD("Link copied")]);
+        },
       },
     ],
     [
@@ -67,7 +87,11 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
       {
         icon: Icon.Link,
         title: "Copy Link as Markdown",
-        onAction: () => saveFile(values).then((file) => methods.copyUrlAsMarkdown(file)),
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "l" },
+        onAction: async () => {
+          const file = await saveFile(values);
+          return Promise.allSettled([methods.copyUrlAsMarkdown(file), showHUD("Link copied")]);
+        },
       },
     ],
   ]),

@@ -1,6 +1,3 @@
-- [ ] Add better "setup/shutdown" to actions.
-- [ ] Add keyboard shortcuts to actions.
-  - (similar ones to https://github.com/raycast/extensions/tree/main/extensions/obsidian?)
 - [ ] Re-write a few things to use React Context
   - Applications: `useApplications`, `useApplication`
   - Preferences: `usePreferences`, `usePreference`
