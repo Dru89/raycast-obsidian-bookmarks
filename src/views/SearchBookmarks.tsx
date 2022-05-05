@@ -1,4 +1,4 @@
-import { FileIcon, getApplications, List } from "@raycast/api";
+import { List } from "@raycast/api";
 import Fuse from "fuse.js";
 import { useEffect, useMemo, useState } from "react";
 import useFiles from "../hooks/use-files";
@@ -18,7 +18,6 @@ export default function SearchBookmarks() {
   const [showDetail, setShowDetail] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
-  const [obsidianIcon, setObsidianIcon] = useState<FileIcon>();
   const [fileResult, setFileResult] = useState<File[]>(files);
 
   const tagsByPopularity = useMemo(() => {
@@ -45,18 +44,6 @@ export default function SearchBookmarks() {
       ],
     });
   }, [files]);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const apps = await getApplications();
-      const path = apps.find((app) => app.name === "Obsidian")?.path;
-      if (path) {
-        setObsidianIcon({ fileIcon: path });
-      }
-    };
-
-    fetch();
-  }, []);
 
   useEffect(() => {
     const filtered = (input: File[]) => {
@@ -133,7 +120,6 @@ export default function SearchBookmarks() {
           showDetail={showDetail}
           setShowDetail={setShowDetail}
           key={file.fullPath}
-          obsidianFileIcon={obsidianIcon}
         />
       ))}
     </List>

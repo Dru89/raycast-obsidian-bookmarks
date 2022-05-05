@@ -1,6 +1,8 @@
-import { Action, Alert, Color, confirmAlert, FileIcon, getPreferenceValues, Icon, showHUD } from "@raycast/api";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
-import { DetailActionPreference, File, Preferences } from "../types";
+import { Action, Alert, Color, confirmAlert, FileIcon, Icon, showHUD } from "@raycast/api";
+import { Dispatch, SetStateAction, useMemo } from "react";
+import { useFileIcon } from "../hooks/use-applications";
+import { usePreference } from "../hooks/use-preferences";
+import { DetailActionPreference, File } from "../types";
 import * as methods from "./methods";
 import { ActionGroup, OrderedActionPanel } from "./order-manager";
 
@@ -147,26 +149,12 @@ const createDestructiveActions = (file: File): ActionGroup<DetailActionPreferenc
 
 export type DetailsActionsProps = {
   file: File;
-  obsidianFileIcon?: FileIcon;
   showDetail: boolean;
   setShowDetail: Dispatch<SetStateAction<boolean>>;
 };
-export default function DetailsActions({
-  file,
-  obsidianFileIcon,
-  showDetail,
-  setShowDetail,
-}: DetailsActionsProps): JSX.Element {
-  const [defaultAction, setDefaultAction] = useState<DetailActionPreference>("showDetails");
-
-  useEffect(() => {
-    const fetchAction = async () => {
-      const prefs = await getPreferenceValues<Preferences>();
-      setDefaultAction(prefs.defaultFormAction);
-    };
-
-    fetchAction();
-  }, []);
+export default function DetailsActions({ file, showDetail, setShowDetail }: DetailsActionsProps): JSX.Element {
+  const { value: obsidianFileIcon } = useFileIcon("Obsidian");
+  const { value: defaultAction } = usePreference("defaultItemAction");
 
   const groups = useMemo(() => {
     return [

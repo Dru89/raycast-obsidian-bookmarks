@@ -1,8 +1,10 @@
-import { Action, FileIcon, getApplications, getPreferenceValues, Icon, showHUD } from "@raycast/api";
-import { useEffect, useMemo, useState } from "react";
+import { Action, FileIcon, Icon, showHUD } from "@raycast/api";
+import { useMemo } from "react";
 import { asFile } from "../helpers/save-to-obsidian";
+import { useFileIcon } from "../hooks/use-applications";
 import { LinkFormState } from "../hooks/use-link-form";
-import { FormActionPreference, Preferences } from "../types";
+import { usePreference } from "../hooks/use-preferences";
+import { FormActionPreference } from "../types";
 import * as methods from "./methods";
 import { ActionGroup, OrderedActionPanel } from "./order-manager";
 
@@ -99,26 +101,8 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
 
 export type FormActionsProps = { values: LinkFormState["values"] };
 export default function FormActions({ values }: FormActionsProps): JSX.Element {
-  const [obsidianIcon, setObsidianIcon] = useState<FileIcon>();
-  const [defaultAction, setDefaultAction] = useState<FormActionPreference>("openObsidian");
-
-  useEffect(() => {
-    const fetchIcon = async () => {
-      const apps = await getApplications();
-      const path = apps.find((app) => app.name === "Obsidian")?.path;
-      if (path) {
-        setObsidianIcon({ fileIcon: path });
-      }
-    };
-
-    const fetchAction = async () => {
-      const prefs = await getPreferenceValues<Preferences>();
-      setDefaultAction(prefs.defaultFormAction);
-    };
-
-    fetchIcon();
-    fetchAction();
-  }, []);
+  const { value: obsidianIcon } = useFileIcon("Obsidian");
+  const { value: defaultAction } = usePreference("defaultFormAction");
 
   const obsidianActions = useMemo(() => createObsidianActions(values, obsidianIcon), [values, obsidianIcon]);
   const browserActions = useMemo(() => createBrowserActions(values), [values]);

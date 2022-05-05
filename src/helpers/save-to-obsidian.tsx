@@ -1,5 +1,4 @@
 import { getPreferenceValues } from "@raycast/api";
-import frontMatter from "front-matter";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import dedent from "ts-dedent";
