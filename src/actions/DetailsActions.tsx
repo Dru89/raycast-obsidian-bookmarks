@@ -19,17 +19,8 @@ const createDetailsActions = (
       {
         title: showDetail ? "Hide Details" : "Show Details",
         icon: showDetail ? Icon.EyeSlash : Icon.Eye,
-        shortcut: { modifiers: ["cmd", "shift"], key: "p" },
+        shortcut: { modifiers: ["cmd"], key: "p" },
         onAction: () => setShowDetail((detail) => !detail),
-      },
-    ],
-    [
-      "markAsRead",
-      {
-        title: file.attributes.read ? "Mark as Unread" : "Mark as Read",
-        icon: file.attributes.read ? Icon.Circle : Icon.Checkmark,
-        shortcut: { modifiers: ["cmd", "shift"], key: "x" },
-        onAction: () => (file.attributes.read ? methods.markAsUnread(file) : methods.markAsRead(file)),
       },
     ],
   ]),
@@ -45,7 +36,7 @@ const createObsidianActions = (file: File, icon?: FileIcon): ActionGroup<DetailA
       "openObsidian",
       {
         title: "Open Obsidian",
-        shortcut: { modifiers: ["cmd"], key: "o" },
+        shortcut: { modifiers: ["cmd", "shift"], key: "o" },
         onAction: () => Promise.allSettled([methods.openObsidianFile(file), showHUD("Opening Obsidian…")]),
       },
     ],
@@ -53,7 +44,7 @@ const createObsidianActions = (file: File, icon?: FileIcon): ActionGroup<DetailA
       "copyObsidianUrl",
       {
         title: "Copy Obsidian Link",
-        shortcut: { modifiers: ["cmd"], key: "c" },
+        shortcut: { modifiers: ["cmd", "shift"], key: "c" },
         onAction: async () => {
           await methods.copyObsidianUri(file);
           showHUD("Link copied");
@@ -64,7 +55,7 @@ const createObsidianActions = (file: File, icon?: FileIcon): ActionGroup<DetailA
       "copyObsidianUrlAsMarkdown",
       {
         title: "Copy Obsidian Link as Markdown",
-        shortcut: { modifiers: ["cmd"], key: "l" },
+        shortcut: { modifiers: ["cmd", "shift"], key: "l" },
         onAction: async () => {
           await methods.copyObsidianUriAsMarkdown(file);
           showHUD("Link copied");
@@ -84,7 +75,7 @@ const createBrowserActions = (file: File): ActionGroup<DetailActionPreference> =
       {
         title: "Open Link",
         icon: Icon.Globe,
-        shortcut: { modifiers: ["cmd", "shift"], key: "o" },
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "o" },
         onAction: () => Promise.allSettled([methods.openUrl(file), showHUD("Opening link…")]),
       },
     ],
@@ -93,7 +84,7 @@ const createBrowserActions = (file: File): ActionGroup<DetailActionPreference> =
       {
         title: "Copy Link",
         icon: Icon.Link,
-        shortcut: { modifiers: ["cmd", "shift"], key: "c" },
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "c" },
         onAction: async () => {
           await methods.copyUrl(file);
           showHUD("Link copied");
@@ -105,7 +96,7 @@ const createBrowserActions = (file: File): ActionGroup<DetailActionPreference> =
       {
         title: "Copy Link as Markdown",
         icon: Icon.Link,
-        shortcut: { modifiers: ["cmd", "shift"], key: "l" },
+        shortcut: { modifiers: ["cmd", "ctrl"], key: "l" },
         onAction: async () => {
           await methods.copyUrlAsMarkdown(file);
           showHUD("Link copied");
@@ -120,11 +111,20 @@ const createDestructiveActions = (file: File): ActionGroup<DetailActionPreferenc
   useDivider: "always",
   actions: new Map([
     [
+      "markAsRead",
+      {
+        title: file.attributes.read ? "Mark as Unread" : "Mark as Read",
+        icon: file.attributes.read ? Icon.Circle : Icon.Checkmark,
+        shortcut: { modifiers: ["cmd", "shift"], key: "x" },
+        onAction: () => (file.attributes.read ? methods.markAsUnread(file) : methods.markAsRead(file)),
+      },
+    ],
+    [
       "deleteFile",
       {
         title: "Delete Bookmark",
         icon: { source: Icon.Trash, tintColor: Color.Red },
-        shortcut: { modifiers: ["cmd"], key: "delete" },
+        shortcut: { modifiers: ["cmd", "shift"], key: "delete" },
         onAction: async () => {
           const confirm = await confirmAlert({
             icon: { source: Icon.Trash, tintColor: Color.Red },
@@ -159,8 +159,8 @@ export default function DetailsActions({ file, showDetail, setShowDetail }: Deta
   const groups = useMemo(() => {
     return [
       createDetailsActions(file, showDetail, setShowDetail),
-      createObsidianActions(file, obsidianFileIcon),
       createBrowserActions(file),
+      createObsidianActions(file, obsidianFileIcon),
       createDestructiveActions(file),
     ];
   }, [file, obsidianFileIcon, showDetail, setShowDetail, obsidianFileIcon]);
