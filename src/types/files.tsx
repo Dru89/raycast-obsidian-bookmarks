@@ -42,6 +42,7 @@ export interface FrontMatter {
 export interface File extends Omit<FrontMatterResult<FrontMatter>, "body" | "bodyBegin"> {
   fileName: string;
   fullPath: string;
+  lastModified: Date;
   body?: string;
   bodyBegin?: number;
 }

@@ -36,6 +36,7 @@ async function replaceLocalStorageFilesInternal(files: File[]): Promise<void> {
     fileName: file.fileName,
     fullPath: file.fullPath,
     frontmatter: file.frontmatter,
+    lastModified: file.lastModified,
   }));
 
   const json = JSON.stringify(trimmedFiles);

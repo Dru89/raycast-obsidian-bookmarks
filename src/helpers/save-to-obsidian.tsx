@@ -77,6 +77,7 @@ export async function asFile(values: LinkFormState["values"]): Promise<File> {
     fileName,
     fullPath,
     bodyBegin: 4 + frontmatter.length,
+    lastModified: new Date(),
   };
 }
 

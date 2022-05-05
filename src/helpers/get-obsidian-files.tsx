@@ -15,13 +15,16 @@ export default async function getObsidianFiles(): Promise<Array<File>> {
 
   const files = await fs.readdir(dir);
   const markdown = files.filter((file) => file.endsWith(".md"));
-  const promises = markdown.map((file) =>
-    fs.readFile(path.join(dir, file), { encoding: "utf-8" }).then((val) => ({
-      ...frontMatter<FrontMatter>(val),
-      fileName: file,
-      fullPath: path.join(dir, file),
-    }))
-  );
+  const promises = markdown.map(async (fileName): Promise<File> => {
+    const fullPath = path.join(dir, fileName);
+    const [stat, text] = await Promise.all([fs.stat(fullPath), fs.readFile(fullPath, { encoding: "utf-8" })]);
+    return {
+      ...frontMatter<FrontMatter>(text),
+      fileName,
+      fullPath,
+      lastModified: stat.mtime,
+    };
+  });
 
   const results = await Promise.allSettled(promises);
   const fileResults = await results.filter(isFulfilledPromise).map((result) => result.value);
