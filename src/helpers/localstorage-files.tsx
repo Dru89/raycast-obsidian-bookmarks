@@ -1,5 +1,5 @@
 import { LocalStorage } from "@raycast/api";
-import { File, isFile, unique } from "../types";
+import { File, unique } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function safelyRun<F extends (...args: any[]) => any>(func: F, defaultValue: ReturnType<F>): F {
@@ -13,21 +13,51 @@ function safelyRun<F extends (...args: any[]) => any>(func: F, defaultValue: Ret
   }) as F;
 }
 
-function isFileArray(v: unknown): v is File[] {
-  if (v == null) return false;
-  return Array.isArray(v) && v.every((val) => isFile(val));
+function isFileAttributesLike(v: unknown): v is File["attributes"] {
+  if (v == null || typeof v !== "object") return false;
+  const attrs = v as File["attributes"];
+  return (
+    typeof attrs.url === "string" &&
+    typeof attrs.title === "string" &&
+    typeof attrs.read === "boolean" &&
+    (attrs.added instanceof Date || typeof attrs.added === "string") &&
+    Array.isArray(attrs.tags) &&
+    attrs.tags.every((tag) => typeof tag === "string")
+  );
+}
+
+function isFileLike(v: unknown): v is File {
+  if (v == null || typeof v !== "object") return false;
+  const file = v as File;
+  return (
+    typeof file.fileName === "string" &&
+    typeof file.fullPath === "string" &&
+    (file.lastModified instanceof Date || typeof file.lastModified === "string") &&
+    (file.frontmatter == null || typeof file.frontmatter === "string") &&
+    (file.body == null || typeof file.body === "string") &&
+    (file.bodyBegin == null || typeof file.bodyBegin === "number") &&
+    isFileAttributesLike(file.attributes)
+  );
+}
+
+function toFileArray(files: unknown): File[] {
+  if (files == null || !Array.isArray(files)) {
+    throw new Error(`Unexpected format for obsidian files in Local Storage: ${JSON.stringify(files)}`);
+  }
+  return files.map((file) => {
+    if (!isFileLike(file)) {
+      throw new Error(`Unexpected format for obsidian file in Local Storage: ${JSON.stringify(file)}`);
+    }
+    file.attributes.added = new Date(file.attributes.added);
+    file.lastModified = new Date(file.lastModified);
+    return file;
+  });
 }
 
 async function getLocalStorageFilesInternal(): Promise<File[]> {
   const stored = await LocalStorage.getItem<string>("obsidian-files");
   if (!stored) return [];
-
-  const json = JSON.parse(stored);
-  if (isFileArray(json)) {
-    return json;
-  } else {
-    throw new Error(`Unexpected format for obsidian files in Local Storage: ${stored}`);
-  }
+  return toFileArray(JSON.parse(stored));
 }
 
 async function replaceLocalStorageFilesInternal(files: File[]): Promise<void> {
