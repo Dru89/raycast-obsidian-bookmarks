@@ -85,7 +85,7 @@ export default async function saveToObsidian(file: File): Promise<string> {
     ---
     url: ${JSON.stringify(file.attributes.url)}
     title: ${JSON.stringify(file.attributes.title)}
-    tags: ${JSON.stringify(file.attributes.tags)}
+    tags: ${JSON.stringify(file.attributes.tags.map((t) => slugify(t)))}
     added: ${formatDate(file.attributes.added)}
     read: ${JSON.stringify(file.attributes.read)}
     ---

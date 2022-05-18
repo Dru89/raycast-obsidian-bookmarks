@@ -9,7 +9,6 @@ export type FormActionPreference =
 export type DetailActionPreference = FormActionPreference | "showDetails" | "markAsRead" | "deleteFile";
 
 export interface Preferences {
-  vaultName: string;
   vaultPath: string;
   bookmarksPath: string;
   defaultFormAction: FormActionPreference;

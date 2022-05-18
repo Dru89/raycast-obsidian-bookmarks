@@ -1,4 +1,4 @@
-import { Action, FileIcon, Icon, showHUD } from "@raycast/api";
+import { Action, FileIcon, Icon, popToRoot, showHUD } from "@raycast/api";
 import { useMemo } from "react";
 import { asFile } from "../helpers/save-to-obsidian";
 import { useFileIcon } from "../hooks/use-applications";
@@ -9,6 +9,8 @@ import * as methods from "./methods";
 import { ActionGroup, OrderedActionPanel } from "./order-manager";
 
 const saveFile = (values: LinkFormState["values"]) => asFile(values).then((f) => methods.saveFile(f));
+const delay = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
+const popAndShowHUD = (message: string) => popToRoot().then(() => showHUD(message));
 
 const createObsidianActions = (
   values: LinkFormState["values"],
@@ -26,7 +28,8 @@ const createObsidianActions = (
         shortcut: { modifiers: ["cmd", "shift"], key: "o" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.openObsidianFile(file), showHUD("Opening Obsidian…")]);
+          await delay(250); // Kinda gross, but Obsidian doesn't seem to immediately recognize the file.
+          return Promise.allSettled([methods.openObsidianFile(file), popAndShowHUD("Opening Obsidian…")]);
         },
       },
     ],
@@ -37,7 +40,7 @@ const createObsidianActions = (
         shortcut: { modifiers: ["cmd", "shift"], key: "c" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.copyObsidianUri(file), showHUD("Link copied")]);
+          return Promise.allSettled([methods.copyObsidianUri(file), popAndShowHUD("Link copied")]);
         },
       },
     ],
@@ -48,7 +51,7 @@ const createObsidianActions = (
         shortcut: { modifiers: ["cmd", "shift"], key: "l" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.copyObsidianUriAsMarkdown(file), showHUD("Link copied")]);
+          return Promise.allSettled([methods.copyObsidianUriAsMarkdown(file), popAndShowHUD("Link copied")]);
         },
       },
     ],
@@ -68,7 +71,7 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
         shortcut: { modifiers: ["cmd", "ctrl"], key: "o" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.openUrl(file), showHUD("Opening link…")]);
+          return Promise.allSettled([methods.openUrl(file), popAndShowHUD("Opening link…")]);
         },
       },
     ],
@@ -80,7 +83,7 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
         shortcut: { modifiers: ["cmd", "ctrl"], key: "c" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.copyUrl(file), showHUD("Link copied")]);
+          return Promise.allSettled([methods.copyUrl(file), popAndShowHUD("Link copied")]);
         },
       },
     ],
@@ -92,7 +95,7 @@ const createBrowserActions = (values: LinkFormState["values"]): ActionGroup<Form
         shortcut: { modifiers: ["cmd", "ctrl"], key: "l" },
         onAction: async () => {
           const file = await saveFile(values);
-          return Promise.allSettled([methods.copyUrlAsMarkdown(file), showHUD("Link copied")]);
+          return Promise.allSettled([methods.copyUrlAsMarkdown(file), popAndShowHUD("Link copied")]);
         },
       },
     ],

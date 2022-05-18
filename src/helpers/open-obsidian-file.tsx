@@ -9,11 +9,13 @@ export function createObsidianUri(file: string, inBookmarks = true): string {
   const filePath = inBookmarks ? path.join(prefs.bookmarksPath, file) : file;
 
   const params = new URLSearchParams();
-  params.set("vault", prefs.vaultName);
+  params.set("vault", path.basename(prefs.vaultPath));
   params.set("file", filePath);
   return `obsidian://open?${params.toString().replaceAll("+", "%20")}`;
 }
 
 export default function openObsidianFile(file: string, inBookmarks = true): Promise<void> {
-  return open(createObsidianUri(file, inBookmarks));
+  const url = createObsidianUri(file, inBookmarks);
+  console.log("Opening URL", url);
+  return open(url);
 }

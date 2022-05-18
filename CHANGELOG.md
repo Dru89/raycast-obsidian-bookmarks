@@ -1,3 +1,5 @@
 # Obsidian Bookmarks Changelog
 
-## [Initial Version] - 2022-05-02
+## [Initial Release] - 2022-05-17
+
+This first release adds support for saving and searching bookmarks in Obsidian.

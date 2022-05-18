@@ -21,7 +21,7 @@ export default async function copyUrlToClipboard(url: string, title?: string): P
     const safeTitle = title.replace(unescapedHtml, (s) => htmlEscapes[s as HtmlEscapeChar] ?? undefined);
     const html = `<a href="${url}">${safeTitle}</a>`;
     const hex = Buffer.from(html, "utf-8").toString("hex");
-    await runAppleScript(`set the clipboard to {text:"${url}", «class HTML»:«data${hex}»`);
+    await runAppleScript(`set the clipboard to {text:"${url}", «class HTML»:«data HTML${hex}»}`);
     return;
   }
 }
